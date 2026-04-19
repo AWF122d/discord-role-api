@@ -47,10 +47,10 @@ const client = new Client({
         GatewayIntentBits.GuildMembers,
         GatewayIntentBits.GuildMessages,
         GatewayIntentBits.MessageContent,
-        GatewayIntentBits.DirectMessages,
+        GatewayIntentBits.DirectMessages, // REQUIRED FOR DMs
     ],
     partials: [
-        Partials.Channel,
+        Partials.Channel, // REQUIRED FOR DMs
         Partials.Message,
         Partials.User
     ],
