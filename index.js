@@ -50,6 +50,8 @@ const client = new Client({
 const SPECIAL_ROLES = [
     "💠 𝓐𝓫𝓼𝓸𝓵𝓾𝓽𝓮 𝓑𝓮𝓲𝓷𝓰 💠",
     "⚒️Court Architects",
+    "⚒️Head of Court Architects",
+    "Supreme Executive",
 ];
 
 client.once("ready", () => {
