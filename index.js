@@ -20,6 +20,7 @@ let chosenRoles = {};
 try {
     if (fs.existsSync(CHOICES_FILE)) {
         chosenRoles = JSON.parse(fs.readFileSync(CHOICES_FILE, "utf8"));
+        console.log("Loaded choices.json");
     }
 } catch (e) {
     console.error("Failed to load choices.json:", e);
@@ -29,6 +30,7 @@ try {
 function saveChoices() {
     try {
         fs.writeFileSync(CHOICES_FILE, JSON.stringify(chosenRoles, null, 2));
+        console.log("Saved choices.json");
     } catch (e) {
         console.error("Failed to save choices.json:", e);
     }
@@ -43,7 +45,7 @@ const client = new Client({
         GatewayIntentBits.MessageContent,
         GatewayIntentBits.DirectMessages,
     ],
-    partials: [Partials.Channel],
+    partials: [Partials.Channel, Partials.Message, Partials.User],
 });
 
 // Special roles that are selectable in DMs
@@ -60,8 +62,13 @@ client.once("ready", () => {
 
 // DM command: !role
 client.on("messageCreate", async (message) => {
+    // Debug log so you can see if DMs are even reaching the bot
+    if (!message.guild) {
+        console.log("DM received from", message.author.tag, ":", message.content);
+    }
+
     if (message.author.bot) return;
-    if (message.guild) return; // only DMs
+    if (message.guild) return; // only handle DMs
 
     const content = message.content.trim().toLowerCase();
     if (content !== "!role") return;
@@ -86,11 +93,13 @@ client.on("messageCreate", async (message) => {
         }
 
         // Build embed
+        const numberEmojis = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣"];
         let desc = "Choose your in-game title by reacting:\n\n";
-        const numberEmojis = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", ];
 
         userSpecialRoles.forEach((roleName, i) => {
-            desc += `${numberEmojis[i]} ${roleName}\n`;
+            if (i < numberEmojis.length) {
+                desc += `${numberEmojis[i]} ${roleName}\n`;
+            }
         });
 
         const embed = new EmbedBuilder()
@@ -134,7 +143,7 @@ client.on("messageCreate", async (message) => {
             }
         });
     } catch (err) {
-        console.error(err);
+        console.error("Error in !role handler:", err);
         await message.reply("Something went wrong while processing your roles.");
     }
 });
@@ -158,7 +167,7 @@ app.get("/roles", async (req, res) => {
 
         return res.json({ roles, chosenRole });
     } catch (err) {
-        console.error(err);
+        console.error("Error in /roles endpoint:", err);
         return res.json({ roles: [], chosenRole: chosenRoles[userId] || null });
     }
 });
