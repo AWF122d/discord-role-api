@@ -45,7 +45,11 @@ const client = new Client({
         GatewayIntentBits.MessageContent,
         GatewayIntentBits.DirectMessages,
     ],
-    partials: [Partials.Channel, Partials.Message, Partials.User],
+    partials: [
+        Partials.Channel,
+        Partials.Message,
+        Partials.User
+    ],
 });
 
 // Special roles that are selectable in DMs
