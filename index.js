@@ -6,8 +6,7 @@ const {
   REST,
   Routes,
   SlashCommandBuilder,
-  Events,
-  PermissionFlagsBits
+  Events
 } = require("discord.js");
 require("dotenv").config();
 
@@ -17,9 +16,10 @@ require("dotenv").config();
 const TOKEN = process.env.BOT_TOKEN;
 const GUILD_ID = process.env.GUILD_ID;
 const CLIENT_ID = process.env.CLIENT_ID;
+const DASH_ROLE = process.env.DASH_ROLE; // Role name for dashboard permissions
 
-if (!TOKEN || !GUILD_ID || !CLIENT_ID) {
-  console.error("Missing BOT_TOKEN, GUILD_ID or CLIENT_ID in environment variables.");
+if (!TOKEN || !GUILD_ID || !CLIENT_ID || !DASH_ROLE) {
+  console.error("Missing BOT_TOKEN, GUILD_ID, CLIENT_ID, or DASH_ROLE in environment variables.");
   process.exit(1);
 }
 
@@ -65,24 +65,14 @@ const commands = [
 
   new SlashCommandBuilder()
     .setName("roles")
-    .setDescription("Shows your Discord and in-game roles"),
+    .setDescription("Shows your Discord and in‑game roles"),
 
   new SlashCommandBuilder()
     .setName("update")
-    .setDescription("Update another user's data (dashboard perms only)")
+    .setDescription("Update a user's roles")
     .addUserOption(option =>
       option.setName("user")
         .setDescription("User to update")
-        .setRequired(true)
-    )
-    .addStringOption(option =>
-      option.setName("field")
-        .setDescription("Field to update")
-        .setRequired(true)
-    )
-    .addStringOption(option =>
-      option.setName("value")
-        .setDescription("New value")
         .setRequired(true)
     )
 ].map(cmd => cmd.toJSON());
@@ -108,18 +98,33 @@ client.once(Events.ClientReady, async () => {
 });
 
 // --------------------------------------
+// PERMISSION CHECK
+// --------------------------------------
+function hasDashPerms(member) {
+  return member.roles.cache.some(r => r.name === DASH_ROLE);
+}
+
+// --------------------------------------
 // HANDLE SLASH COMMANDS
 // --------------------------------------
 client.on(Events.InteractionCreate, async interaction => {
   if (!interaction.isChatInputCommand()) return;
 
   // -------------------------
-  // /ping
+  // /ping (NO PERMISSIONS)
   // -------------------------
   if (interaction.commandName === "ping") {
     const ping = client.ws.ping;
     return interaction.reply({
       content: `Pong! ${ping}ms`,
+      ephemeral: true
+    });
+  }
+
+  // All other commands require dashboard permissions
+  if (!hasDashPerms(interaction.member)) {
+    return interaction.reply({
+      content: "You do not have dashboard permissions.",
       ephemeral: true
     });
   }
@@ -150,33 +155,32 @@ client.on(Events.InteractionCreate, async interaction => {
   }
 
   // -------------------------
-  // /update (dashboard perms only)
+  // /update <user>
   // -------------------------
   if (interaction.commandName === "update") {
-    const allowedRole = "Dashboard Admin"; // CHANGE THIS to your dashboard admin role
+    const target = interaction.options.getUser("user");
 
-    if (!interaction.member.roles.cache.some(r => r.name === allowedRole)) {
+    const guild = client.guilds.cache.get(GUILD_ID);
+    const member = await guild.members.fetch(target.id).catch(() => null);
+
+    if (!member) {
       return interaction.reply({
-        content: "You do not have permission to use /update.",
+        content: "User not found in the server.",
         ephemeral: true
       });
     }
 
-    const target = interaction.options.getUser("user");
-    const field = interaction.options.getString("field");
-    const value = interaction.options.getString("value");
-
-    console.log(`Dashboard update by ${interaction.user.id}: ${field} -> ${value} for ${target.id}`);
+    console.log(`Roles refreshed for ${target.id} by ${interaction.user.id}`);
 
     return interaction.reply({
-      content: `Updated **${field}** for <@${target.id}> to: **${value}**`,
+      content: `Updated roles for <@${target.id}>.`,
       ephemeral: true
     });
   }
 });
 
 // --------------------------------------
-// API: GET ROLES
+// API: GET ROLES (Roblox uses this)
 // --------------------------------------
 app.get("/getroles", async (req, res) => {
   try {
