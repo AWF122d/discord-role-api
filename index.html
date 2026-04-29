@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Velion Court Dashboard</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar glass">
+      <h1 class="logo">Velion Court</h1>
+      <nav>
+        <button class="nav-btn active" data-view="search">Player Search</button>
+      </nav>
+      <div class="user-box">
+        <label>Your Discord ID</label>
+        <input id="executorId" type="text" placeholder="909359845872922635" />
+        <small>This will be wired to OAuth later.</small>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar glass">
+        <h2 id="viewTitle">Player Search</h2>
+      </header>
+
+      <section id="searchView" class="view active">
+        <div class="card glass">
+          <h3>Search Player</h3>
+          <label>Discord ID</label>
+          <input id="searchDiscordId" type="text" placeholder="Enter Discord ID" />
+          <button id="searchBtn">Search</button>
+          <p id="searchError" class="error"></p>
+        </div>
+
+        <div id="profileContainer" class="card glass hidden">
+          <div class="profile-header">
+            <img id="profileAvatar" class="avatar" />
+            <div>
+              <h3 id="profileName"></h3>
+              <p id="profileId"></p>
+              <p>Highest Rank: <span id="profileRank"></span></p>
+            </div>
+          </div>
+
+          <div class="profile-grid">
+            <div class="profile-section">
+              <h4>Rank Management</h4>
+              <p id="rankInfo"></p>
+              <select id="rankSelect"></select>
+              <button id="rankSaveBtn">Update Rank</button>
+              <p id="rankError" class="error"></p>
+              <p id="rankSuccess" class="success"></p>
+            </div>
+
+            <div class="profile-section">
+              <h4>Punishments</h4>
+              <label>Action</label>
+              <select id="punishAction">
+                <option value="warn">Warn</option>
+                <option value="kick">Kick</option>
+                <option value="ban">Ban</option>
+              </select>
+              <label>Reason</label>
+              <input id="punishReason" type="text" placeholder="Optional reason" />
+              <button id="punishBtn">Apply Punishment</button>
+              <p id="punishError" class="error"></p>
+              <p id="punishSuccess" class="success"></p>
+            </div>
+          </div>
+
+          <div class="profile-section">
+            <h4>Logs</h4>
+            <div id="logsList" class="logs"></div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="main.js"></script>
+</body>
+</html>
